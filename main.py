@@ -5,8 +5,8 @@ from pyrogram import Client, filters
 import sqlite3
 from time import sleep
 import asyncio
-
-
+import requests
+import json
 
 
 intents = discord.Intents.all();
@@ -15,29 +15,36 @@ botTG = Client("bot", api_id=config.API_ID, api_hash=config.API_HASH,
     bot_token=config.TOKENTG)
 
 
-datsheet = ''
+#DATA STRUCTURE
 
-
-with botTG:
-    print(botTG.export_session_string())
-    botTG.send_message(config.GROUP_TO_TOKEN, datasheet)
-def funcfunc():
-    
-    print("Вы находитесь здесь1")
-    #res = messages1.exection(message.text)
-        #print(res)
-        #print(botTG.export_session_string())
-    #print(repos)
-    print(config.GROUP_TO_TOKEN)
-    return botTG.send_message(config.GROUP_TO_TOKEN, 'fuck')
-
-
-
+datasheet = ''
 author = ''
 repos = ''
-datsheet = ''
+
+
+print(repos)
+
 
 #DATABASE CONNECTION, CREATE, EXECUTE, UPDATE AND CLOSE  \\\\\\\\\\\\//////////
+# Должна быть создана база данных для каждого пользователя,
+
+class Userspace:
+    def __init__(self, database):
+        self.connection = sqlite3.connect(database)
+        self.cursor = self.connection.cursor()
+        with self.connection:
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS User(ID INTEGER, PRIMARY KEY, user_id INTEGER, subscribes INTEGER)")
+
+
+class Subscribes:
+    def __init__(self, database):
+        self.connection = sqlite3.connect(database)
+        self.curos = self.connection.cursor()
+        with self.connection:
+            self.cursor.execute("CREATE TABLE IF NOT EXISTS Subscribes(ID INTEGER, PRIMARY KEY, source_id INTEGER)")
+
+
+
 
 class Messages:
     def __init__(self, database):
@@ -45,7 +52,7 @@ class Messages:
         self.cursor = self.connection.cursor()
         with self.connection:
             self.cursor.execute(
-                "CREATE TABLE IF NOT EXISTS messages(target INTEGER, source INTEGER, message INTEGER, text VARCHAR(4096));")
+                "CREATE TABLE IF NOT EXISTS messages(target INTEGER, source INTEGER, message INTEGER, text TEXT);")
 
     def exists(self, target, source, message: int):
         with self.connection:
@@ -56,64 +63,82 @@ class Messages:
 
     def exection(self):
         with self.connection:
-            datasheet = self.cursor.execute("SELECT * FROM messages WHERE message=1;")
-            print(datsheet)
-            return datsheet
-
-
+            datasheet = self.cursor.execute('SELECT text FROM messages').fetchall()
+            #print(datasheet)
+            return datasheet
 
     def add(self, message: int, text: str):
         with self.connection:
             return self.cursor.execute("INSERT INTO messages VALUES (?, ?, ?, ?);", (None, None, message, text))
+            commit()
 
     def close(self):
         self.connection.close()
 
 
+
+
+#WORK WITH DATABASE
+
 messages1 = Messages(config.MESSAGES)
+datasheet = messages1.exection()
 
 
+
+# def sending(datasheet):
+#     global msg
+#     for index, tup in enumerate(datasheet):
+#         print(tup)
+#         msg = tup[-1]
+#         "".join(map(str, msg))
+#         print(type(msg))
+#         return msg
 
 
 
 @botDS.event
 async def on_message(message):
+    global repos
     author = message.author.name
     try:
-        repos = message.content #+ ' ' +message.attachments[0].url
+        repos = message.content + ' ' +message.attachments[0].url
     except:
         repos = message.content
-    print(repos)
-    database = open(r'./dot.txt', 'r+')
-    
-    database.write(repos)
-    
-    tmp = database.read()
-    database.close()
-
-
     # store message in the database
-    #messages1.add(1, message.content)
+    messages1.add(1, message.content)
+    print(repos)
     #messages1.close()
+    return repos
     
+        
+
+with botTG:
+     sending(datasheet)
+     print(botTG.export_session_string())
+     print(repos)
+     print(type(repos))
+     botTG.send_message(config.GROUP_TO_TOKEN, msg)
 
 
 
-def handler():
-    #database = database.readline()
-    #print(database)
-    print("Вы находитесь здесь1")
-    if messages1.exists(message.id, message.text):
-        print("Вы находитесь здесь")
-        botTG.send_message(config.GROUP_TO_TOKEN, message.id, message.text)
-        print(message.author.name, message.content)
-        r = 'fuck'
+# def send_messageTG(msg, data, func):
+#     sending(datasheet)
+#     bot = config.TOKENTG
+#     conf = config.GROUP_TO_TOKEN
+#     text = msg
+#     url = f"https://api.telegram.org/bot{bot}/sendMessage"
+#     response = requests.post(url, json={'chat_id': conf, 'text': msg})  
+#     print(response.text)
+#     return response.json()
 
 
 
 def main():
+    sending(datasheet)
     botDS.run(config.TOKENDS)
     botTG.run()
+    
+    
 
 
 asyncio.run(main())
