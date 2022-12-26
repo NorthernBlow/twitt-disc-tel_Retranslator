@@ -1,8 +1,13 @@
 import websocket
 import json
 import threading
-import time
+from time import sleep
 import config
+
+global to_retranslate
+
+
+
 
 
 def send_json_request(ws, request):
@@ -18,7 +23,7 @@ def recieve_json_response(ws):
 def heartbeat(interval, ws):
 	print('so it begins')
 	while True:
-		time.sleep(interval)
+		sleep(interval)
 		heartbeat.JSON = {
 		"op": 1,
 		"d": "null"
@@ -27,35 +32,44 @@ def heartbeat(interval, ws):
 		send_json_request(ws, heartbeatJSON)
 		print("so it sent")
 
+def retranslate():
 
-ws = websocket.WebSocket()
-ws.connect('wss://gateway.discord.gg/?v=&&encoding=json')
-event = recieve_json_response(ws)
-
-heartbeat_interval = event['d']['heartbeat_interval'] / 1000
-threading.start_new_thread(heartbeat, (heartbeat_interval, ws))
-payload = {
-	'op': 2,
-	'd': {
-	"token": config.token,
-	"properties": {
-	"$os": "linux",
-	"$browser": "firefox",
-	"$device": 'pc'
-	}
-	}
-}
-
-send_json_request(ws, payload)
-
-
-while True:
+	time_to_sleep_when_captcha = 5
+	ws = websocket.WebSocket()
+	ws.connect('wss://gateway.discord.gg/?v=9&encoding=json')
 	event = recieve_json_response(ws)
 
-	try:
-		print(f"{event['d']['author']['username']}: {event['d']['content']}")
-		op_code = event('op')
-		if op_code == 11:
-			print("so it begins recieved")
-	except:
-		pass
+	heartbeat_interval = event['d']['heartbeat_interval'] / 1000
+	threading._start_new_thread(heartbeat, (heartbeat_interval, ws))
+	payload = {
+		'op': 2,
+		'd': {
+		"token": config.token,
+		"properties": {
+		"$os": "linux",
+		"$browser": "firefox",
+		"$device": 'pc'
+			}
+		}
+	}
+
+	send_json_request(ws, payload)
+	while True:
+		event = recieve_json_response(ws)
+
+		try:
+			print(f"{event['d']['author']['username']}: {event['d']['content']}")
+			to_retranslate = f"{event['d']['author']['username']}: {event['d']['content']}"
+			print(type(to_retranslate))
+			op_code = event('op')
+			if op_code == 11:
+				print("so it begins recieved")
+		except:
+			sleep(time_to_sleep_when_captcha)
+			time_to_sleep_when_captcha += 1
+
+
+	return to_retranslate
+		
+
+retranslate()

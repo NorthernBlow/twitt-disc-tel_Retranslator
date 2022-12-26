@@ -7,10 +7,12 @@ from time import sleep
 import asyncio
 import requests
 import json
+import threading
+import parser
 
 
 intents = discord.Intents.all();
-botDS = commands.Bot(intents=intents, command_prefix='>')
+#botDS = commands.Bot(intents=intents, command_prefix='!')
 botTG = Client("bot", api_id=config.API_ID, api_hash=config.API_HASH,
     bot_token=config.TOKENTG)
 
@@ -20,7 +22,7 @@ botTG = Client("bot", api_id=config.API_ID, api_hash=config.API_HASH,
 datasheet = ''
 author = ''
 repos = ''
-
+#locker = threading.Lock()
 
 print(repos)
 
@@ -96,28 +98,31 @@ datasheet = messages1.exection()
 
 
 
-@botDS.event
-async def on_message(message):
-    global repos
-    author = message.author.name
-    try:
-        repos = message.content + ' ' +message.attachments[0].url
-    except:
-        repos = message.content
-    # store message in the database
-    messages1.add(1, message.content)
-    print(repos)
-    #messages1.close()
-    return repos
+# @botDS.event
+# async def on_message(message):
+#     global repos
+#     author = message.author.name
+#     try:
+#         locker.acquire()
+#         repos = message.content + ' ' +message.attachments[0].url
+#         time.sleep(1)
+#     except:
+#         repos = message.content
+#     # store message in the database
+#     messages1.add(1, message.content)
+#     print(repos)
+#     #messages1.close()
+#     return repos
     
-        
 
-with botTG:
-     sending(datasheet)
-     print(botTG.export_session_string())
-     print(repos)
-     print(type(repos))
-     botTG.send_message(config.GROUP_TO_TOKEN, msg)
+
+def messagebotTG(to_retranslate):
+    
+    #sending(datasheet)
+    print(botTG.export_session_string())
+    #print(repos)
+    #print(type(repos))
+    botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
 
 
 
@@ -134,12 +139,15 @@ with botTG:
 
 
 def main():
-    sending(datasheet)
+    #sending(datasheet)
     botDS.run(config.TOKENDS)
+    parser.retranslate()
     botTG.run()
-    
+    messagebotTG(to_retranslate)
+    print(to_retranslate)
+    botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
     
 
 
-asyncio.run(main())
+main()
 
