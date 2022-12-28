@@ -104,13 +104,15 @@ def messagebotTG(to_retranslate):
 
 async def main():
     await botTG.start()
-    retranslate()
-    botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
+    
+    await botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
     await botTG.stop()
     
 
 if __name__=="__main__":
-    asyncio.run(main())
+    retranslate()
+    botTG.run(main())
+
     
 
 
