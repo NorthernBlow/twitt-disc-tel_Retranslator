@@ -50,7 +50,6 @@ def retranslate():
 
     time_to_sleep_when_captcha = 5
     ws = websocket.WebSocket()
-    
     ws.connect('wss://gateway.discord.gg/?v=9&encoding=json')
     event = recieve_json_response(ws)
 
@@ -69,7 +68,7 @@ def retranslate():
     }
 
     send_json_request(ws, payload)
-        
+       
     event = recieve_json_response(ws)
 
     try:
@@ -88,8 +87,8 @@ def retranslate():
 
 #WORK WITH DATABASE
 
-messages1 = Messages(config.MESSAGES)
-datasheet = messages1.exection()
+#messages1 = Messages(config.MESSAGES)
+#datasheet = messages1.exection()
 
 
 
@@ -103,14 +102,16 @@ def messagebotTG(to_retranslate):
 
 
 
-def main():
-    #sending(datasheet)
+async def main():
+    await botTG.start()
     retranslate()
-    botTG.run()
-    print(to_retranslate)
     botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
+    await botTG.stop()
     
 
 if __name__=="__main__":
-    main()
+    asyncio.run(main())
+    
+
+
 
