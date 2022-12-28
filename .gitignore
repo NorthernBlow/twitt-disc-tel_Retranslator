@@ -1,3 +1,4 @@
-__pycache__
+﻿__pycache__
 /env
 bot.session
+config.py
