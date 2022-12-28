@@ -2,8 +2,9 @@ import websocket
 import json
 import threading
 from time import sleep
-import config
+import config 
 from pyrogram import Client
+import os
 
 botTG = Client("bot", api_id=config.API_ID, api_hash=config.API_HASH,
    bot_token=config.TOKENTG)
@@ -32,13 +33,16 @@ def heartbeat(interval, ws):
 
 def retranslate():
 	global to_retranslate
+	global groupid
+	global username
 
 	time_to_sleep_when_captcha = 5
 	ws = websocket.WebSocket()
 	
 	ws.connect('wss://gateway.discord.gg/?v=9&encoding=json')
 	event = recieve_json_response(ws)
-
+	
+	
 	heartbeat_interval = event['d']['heartbeat_interval'] / 1000
 	threading._start_new_thread(heartbeat, (heartbeat_interval, ws))
 	payload = {
@@ -57,23 +61,56 @@ def retranslate():
 	while True:
 		
 		event = recieve_json_response(ws)
+	
 
 		try:
-			print(f"{event['d']['author']['username']}: {event['d']['content']}")
+			print(f"{event['d']['author']['username']}: {event['d']['content']}: {event['d']['guild_id']}")
+			
 			to_retranslate = f"{event['d']['author']['username']}: {event['d']['content']}"
-			print(type(to_retranslate))
-			with botTG:
-				botTG.send_message(config.GROUP_TO_TOKEN, to_retranslate)
+			groupid = f"{event['d']['guild_id']}"
+			username = f"{event['d']['author']['username']}"
+			#print(type(to_retranslate))
+			#print(groupid)
+			#print(settings)
+			userdir = "./users/"
+			directory = os.scandir(path=userdir)
+			users = {}
 
+
+
+			for entry in directory:
+				if not entry.name.startswith('.') and entry.is_file():
+
+					file = open(userdir + entry.name, "r")
+					data = file.read().splitlines()
+				#print("nihuya")
+				#print(data)
+					users[entry.name] = list()
+					file.close()
+					for source in data:
+						users[entry.name].append(source)
+					#print(1, source)
+			
+			for cortege in users.items():
+				for sources in cortege[1]:
+					print(sources)
+					if groupid == sources:
+						print("работает?")	
+						print(cortege[0])
+						with botTG:
+							botTG.send_message(cortege[0], to_retranslate)
+
+			print(users)
 			op_code = event('op')
 			if op_code == 11:
 				print("so it begins recieved")
 		except:
-			sleep(time_to_sleep_when_captcha)
-			time_to_sleep_when_captcha += 1
+			print('____')
+			#time_to_sleep_when_captcha += 1
 
 
 	return to_retranslate
 		
 
 retranslate()
+
