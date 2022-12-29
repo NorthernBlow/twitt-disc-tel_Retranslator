@@ -91,11 +91,18 @@ def retranslate():
 			for cortege in users.items():
 				for sources in cortege[1]:
 					print(sources)
-					if groupid == sources:
+					sources = sources.split('|')
+					print(sources)
+					if groupid == sources[0]:
 						print("работает?")	
-						print(cortege[0])
-						with botTG:
-							botTG.send_message(cortege[0], to_retranslate)
+						
+						if len(sources) > 2:
+							if to_retranslate.find(sources[2]) != -1:
+								with botTG:
+									botTG.send_message(cortege[0], to_retranslate)
+						else:
+							with botTG:
+									botTG.send_message(cortege[0], to_retranslate)
 
 			print(users)
 			op_code = event('op')
