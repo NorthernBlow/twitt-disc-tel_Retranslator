@@ -83,13 +83,10 @@ def retranslate():
 
 					file = open(userdir + entry.name, "r")
 					data = file.read().splitlines()
-				#print("nihuya")
-				#print(data)
 					users[entry.name] = list()
 					file.close()
 					for source in data:
 						users[entry.name].append(source)
-					#print(1, source)
 			
 			for cortege in users.items():
 				for sources in cortege[1]:
